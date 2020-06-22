@@ -39,6 +39,10 @@ export class NsisComposer {
 LangString CREATE_DESKTOP_SHORTCUT 1033 "Create Desktop Shortcut"
 LangString INSTALLING 1033 "Installing"
         `,
+        'Polish': `
+LangString CREATE_DESKTOP_SHORTCUT 1045 "Utwórz skrót na pulpicie"
+LangString INSTALLING 1045 "Instalacja"
+        `,
         'SimpChinese': `
 LangString CREATE_DESKTOP_SHORTCUT 2052 "创建桌面快捷方式"
 LangString INSTALLING 2052 "正在安装"
