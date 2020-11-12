@@ -437,8 +437,13 @@ export class Builder {
 
     }
 
+    private sleep(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+
     protected async prepareWinBuild(targetDir: string, appRoot: string, pkg: any, config: BuildConfig) {
 
+        await this.sleep(3000);
         await this.updateWinResources(targetDir, appRoot, pkg, config);
 
     }
