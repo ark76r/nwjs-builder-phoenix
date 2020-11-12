@@ -1,6 +1,6 @@
 
 import { dirname, basename, resolve } from 'path';
-
+import { spawn } from 'child_process';
 import * as semver from 'semver';
 import { ensureDir, emptyDir, readFile, readJson, writeFile, copy, remove, rename, chmod, createReadStream, createWriteStream, readdir } from 'fs-extra';
 import * as Bluebird from 'bluebird';
@@ -624,6 +624,31 @@ export class Builder {
 
     }
 
+    protected async postRenameScript(targetDir: string, appRoot: string, pkg: any, config: BuildConfig) {
+        if (config.postRenameScript) {
+            var args: string[] = [ targetDir ];
+
+            const child = spawn(config.postRenameScript, args);
+
+            await new Promise((resolve, reject) => {
+
+                child.on('error', reject);
+                child.on('close', (code, signal) => {
+
+                    if (code != 0) {
+                        return reject(new Error(`ERROR_EXIT_CODE code = ${code}`));
+                    }
+
+                    resolve({ code, signal });
+
+                });
+
+                child.stdout.pipe(process.stdout);
+                child.stderr.pipe(process.stderr);
+            });
+        }
+    }
+
     protected async buildDirTarget(platform: string, arch: string, runtimeDir: string, pkg: any, config: BuildConfig): Promise<string> {
 
         const targetDir = resolve(this.dir, config.output, this.parseOutputPattern(config.outputPattern, {
@@ -667,6 +692,7 @@ export class Builder {
             await this.prepareWinBuild(targetDir, appRoot, pkg, config);
             await this.copyFiles(platform, targetDir, appRoot, pkg, config);
             await this.renameWinApp(targetDir, appRoot, pkg, config);
+            await this.postRenameScript(targetDir, appRoot, pkg, config);
             break;
         case 'darwin':
         case 'osx':
@@ -676,11 +702,13 @@ export class Builder {
             // rename Helper before main app rename.
             await this.renameMacHelperApp(targetDir, appRoot, pkg, config);
             await this.renameMacApp(targetDir, appRoot, pkg, config);
+            await this.postRenameScript(targetDir, appRoot, pkg, config);
             break;
         case 'linux':
             await this.prepareLinuxBuild(targetDir, appRoot, pkg, config);
             await this.copyFiles(platform, targetDir, appRoot, pkg, config);
             await this.renameLinuxApp(targetDir, appRoot, pkg, config);
+            await this.postRenameScript(targetDir, appRoot, pkg, config);
             break;
         default:
             throw new Error('ERROR_UNKNOWN_PLATFORM');
