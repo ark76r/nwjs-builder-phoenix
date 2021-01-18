@@ -5,10 +5,13 @@ import { createHash } from 'crypto';
 import { exists, readJson, writeJson, createReadStream } from 'fs-extra';
 import * as semver from 'semver';
 
+import { statSync } from 'fs';
+
 export interface IInstaller {
     arch: string;
     path: string;
-    hash: string;
+	hash: string;
+	size: number;
     created: number;
 }
 
@@ -16,7 +19,8 @@ export interface IUpdater {
     arch: string;
     fromVersion: string;
     path: string;
-    hash: string;
+	hash: string;
+	size: number;
     created: number;
 }
 
@@ -101,7 +105,8 @@ export class NsisVersionInfo {
             versionItem.installers.push({
                 arch,
                 path: relative(this.outputDir, path),
-                hash: await this.hashFile('sha256', path),
+				hash: await this.hashFile('sha256', path),
+				size: await this.getSize(path),
                 created: Date.now(),
             });
 
@@ -125,7 +130,8 @@ export class NsisVersionInfo {
                 fromVersion,
                 arch,
                 path: relative(this.outputDir, path),
-                hash: await this.hashFile('sha256', path),
+				hash: await this.hashFile('sha256', path),
+				size: await this.getSize(path),
                 created: Date.now(),
             });
 
@@ -185,6 +191,14 @@ export class NsisVersionInfo {
             createReadStream(path).pipe(hasher);
 
         });
-    }
+	}
+
+	protected getSize(path: string): Promise<number> {
+		return new Promise((resolve, reject) => {
+			let stats = statSync(path);
+			let fileSizeInBytes = stats.size;
+			resolve(fileSizeInBytes);
+		});
+	}
 
 }
