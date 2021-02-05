@@ -24,7 +24,7 @@ export class BuildConfig {
     public nsis: NsisConfig = new NsisConfig();
 
     public appId: string = undefined;
-    public postRenameScript: string = undefined;
+	public postRCEditScript: string = undefined;
     public ffmpegIntegration: boolean = false;
     public strippedProperties: string[] = [ 'scripts', 'devDependencies', 'build' ];
     public overriddenProperties: any = {};
